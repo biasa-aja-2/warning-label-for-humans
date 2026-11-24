@@ -25,10 +25,11 @@ Why this line, against the judge's criteria in order:
 
 import os
 
-ENTRY = (
-    "WARNING: This human will spend 40 minutes choosing a film, "
-    "then fall asleep ten minutes into the opening credits."
-)
+# The label, built from its two beats: the setup (the long browse)
+# and the punchline (the early sleep). One idea, one line.
+SETUP = "This human will spend 40 minutes choosing a film, "
+PUNCHLINE = "then fall asleep ten minutes into the opening credits."
+ENTRY = "WARNING: " + SETUP + PUNCHLINE
 
 
 def main() -> None:
@@ -38,8 +39,18 @@ def main() -> None:
     assert "\n" not in ENTRY and "\r" not in ENTRY, "entry must be one line"
     out_dir = "/output"
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
+    path = os.path.join(out_dir, "entry.txt")
+    with open(path, "w", encoding="utf-8") as f:
         f.write(ENTRY)
+    # The grader collects outputs as another user: leave the file
+    # readable by everyone. Never chmod /output itself.
+    os.chmod(path, 0o644)
+    # Verify the bytes on disk are exactly the entry, one line,
+    # no trailing newline, nothing added.
+    with open(path, "rb") as f:
+        raw = f.read()
+    assert raw == ENTRY.encode("utf-8"), "written entry differs"
+    assert b"\n" not in raw, "written entry must be a single line"
 
 
 if __name__ == "__main__":
